@@ -667,78 +667,79 @@ const addTV = () => {
   };
 
   const exportPDF = () => {
-    const projectData =
-      getProjectData();
+    const canvas =
+      document.querySelector("canvas");
+
+    if (!canvas) {
+      window.alert(
+        "Canvas is not ready yet. Please try again."
+      );
+      return;
+    }
+
+    const imageData =
+      canvas.toDataURL("image/png");
 
     const pdf =
-      new jsPDF();
+      new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+      });
 
-    let y = 18;
+    const pageWidth =
+      pdf.internal.pageSize.getWidth();
+
+    const pageHeight =
+      pdf.internal.pageSize.getHeight();
 
     pdf.setFontSize(16);
     pdf.text(
       "ET Expo Booth Design AI Assistance",
-      14,
-      y
+      12,
+      14
     );
 
-    y += 10;
-
-    pdf.setFontSize(11);
+    pdf.setFontSize(10);
     pdf.text(
-      `Booth: ${boothWidth}ft W x ${boothDepth}ft D`,
-      14,
-      y
+      `Booth: ${boothWidth}ft W x ${boothDepth}ft D    Floor: ${floorType}    Back Wall: ${wallType}`,
+      12,
+      21
     );
 
-    y += 7;
-    pdf.text(
-      `Floor: ${floorType}    Back Wall: ${wallType}`,
-      14,
-      y
-    );
+    const imageX = 12;
+    const imageY = 28;
+    const imageWidth =
+      pageWidth - 24;
 
-    y += 10;
-    pdf.setFontSize(13);
-    pdf.text(
-      "Objects",
-      14,
-      y
-    );
-
-    y += 8;
-    pdf.setFontSize(9);
-
-    const lines = [
-      ...projectData.booth.boothWalls.map((wall) =>
-        `${wall.label || wall.id}: ${wall.size.join(" x ")} at ${wall.position.join(", ")}`
-      ),
-      ...objects.map((obj, index) =>
-        `${index + 1}. ${obj.type}: size ${obj.size?.join(" x ") || "n/a"}, position ${obj.position?.join(", ") || "n/a"}`
-      )
-    ];
-
-    lines.forEach((line) => {
-      if (y > 280) {
-        pdf.addPage();
-        y = 18;
-      }
-
-      pdf.text(
-        line.slice(0, 105),
-        14,
-        y
+    const imageHeight =
+      Math.min(
+        pageHeight - 48,
+        imageWidth * canvas.height / canvas.width
       );
 
-      y += 6;
-    });
+    pdf.addImage(
+      imageData,
+      "PNG",
+      imageX,
+      imageY,
+      imageWidth,
+      imageHeight
+    );
+
+    pdf.setFontSize(9);
+    pdf.text(
+      `Objects: ${objects.length}    Exported: ${new Date().toLocaleString()}`,
+      12,
+      pageHeight - 12
+    );
 
     const blob =
       pdf.output("blob");
 
     downloadFile(
       blob,
-      "ET-Expo-Booth-Design-Proposal.pdf"
+      "ET-Expo-Booth-Design-Image-Proposal.pdf"
     );
   };
 return (
@@ -1688,6 +1689,7 @@ if (
   );
 
 }
+
 
 
 
