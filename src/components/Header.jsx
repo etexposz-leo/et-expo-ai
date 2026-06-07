@@ -1,7 +1,7 @@
 ﻿import { Box } from "@react-three/drei";
 import DraggableObject from "./DraggableObject";
 
-export default function Showcase({
+export default function Header({
   object,
   selectedId,
   setSelectedId,
@@ -23,7 +23,7 @@ export default function Showcase({
           color={
             selectedId === object.id
               ? "orange"
-              : object.color || "white"
+              : object.color
           }
         />
       </Box>

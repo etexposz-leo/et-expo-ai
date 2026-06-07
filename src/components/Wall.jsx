@@ -1,7 +1,7 @@
 ﻿import { Box } from "@react-three/drei";
 import DraggableObject from "./DraggableObject";
 
-export default function Showcase({
+export default function Wall({
   object,
   selectedId,
   setSelectedId,
@@ -9,9 +9,24 @@ export default function Showcase({
   editMode,
   setDraggingObject
 }) {
+  const height =
+    object.size?.[1] || 0;
+
+  const safeObject = {
+    ...object,
+    position: [
+      object.position?.[0] || 0,
+      Math.max(
+        object.position?.[1] || 0,
+        height / 2
+      ),
+      object.position?.[2] || 0
+    ]
+  };
+
   return (
     <DraggableObject
-      object={object}
+      object={safeObject}
       selectedId={selectedId}
       setSelectedId={setSelectedId}
       updateObject={updateObject}
@@ -23,7 +38,7 @@ export default function Showcase({
           color={
             selectedId === object.id
               ? "orange"
-              : object.color || "white"
+              : object.color
           }
         />
       </Box>

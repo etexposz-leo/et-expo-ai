@@ -1,26 +1,33 @@
-import { Box } from "@react-three/drei";
+﻿import { Box } from "@react-three/drei";
+import DraggableObject from "./DraggableObject";
 
 export default function ReceptionDesk({
   object,
   selectedId,
-  setSelectedId
+  setSelectedId,
+  updateObject,
+  editMode,
+  setDraggingObject
 }) {
   return (
-    <Box
-      args={object.size}
-      position={object.position}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelectedId(object.id);
-      }}
+    <DraggableObject
+      object={object}
+      selectedId={selectedId}
+      setSelectedId={setSelectedId}
+      updateObject={updateObject}
+      editMode={editMode}
+      setDraggingObject={setDraggingObject}
     >
-      <meshStandardMaterial
-        color={
-          selectedId === object.id
-            ? "orange"
-            : "#0066ff"
-        }
-      />
-    </Box>
+      <Box args={object.size}>
+        <meshStandardMaterial
+          color={
+            selectedId === object.id
+              ? "orange"
+              : object.color || "#0066ff"
+          }
+        />
+      </Box>
+    </DraggableObject>
   );
 }
+
