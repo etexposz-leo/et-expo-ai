@@ -666,83 +666,133 @@ const addTV = () => {
     );
   };
 
-  const exportPDF = () => {
+  const getCanvasImageData = async () => {
     const canvas =
       document.querySelector("canvas");
 
     if (!canvas) {
-      window.alert(
-        "Canvas is not ready yet. Please try again."
-      );
-      return;
+      throw new Error("Canvas is not ready yet. Please try again.");
     }
 
-    const imageData =
-      canvas.toDataURL("image/png");
-
-    const pdf =
-      new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4"
-      });
-
-    const pageWidth =
-      pdf.internal.pageSize.getWidth();
-
-    const pageHeight =
-      pdf.internal.pageSize.getHeight();
-
-    pdf.setFontSize(16);
-    pdf.text(
-      "ET Expo Booth Design AI Assistance",
-      12,
-      14
+    await new Promise((resolve) =>
+      requestAnimationFrame(resolve)
     );
 
-    pdf.setFontSize(10);
-    pdf.text(
-      `Booth: ${boothWidth}ft W x ${boothDepth}ft D    Floor: ${floorType}    Back Wall: ${wallType}`,
-      12,
-      21
+    await new Promise((resolve) =>
+      requestAnimationFrame(resolve)
     );
 
-    const imageX = 12;
-    const imageY = 28;
-    const imageWidth =
-      pageWidth - 24;
+    const imageCanvas =
+      document.createElement("canvas");
 
-    const imageHeight =
-      Math.min(
-        pageHeight - 48,
-        imageWidth * canvas.height / canvas.width
+    imageCanvas.width = canvas.width;
+    imageCanvas.height = canvas.height;
+
+    const ctx =
+      imageCanvas.getContext("2d");
+
+    ctx.fillStyle = "#111111";
+    ctx.fillRect(
+      0,
+      0,
+      imageCanvas.width,
+      imageCanvas.height
+    );
+
+    ctx.drawImage(
+      canvas,
+      0,
+      0
+    );
+
+    return {
+      dataUrl: imageCanvas.toDataURL("image/png"),
+      width: imageCanvas.width,
+      height: imageCanvas.height
+    };
+  };
+
+  const exportPDF = async () => {
+    try {
+      const screenshot =
+        await getCanvasImageData();
+
+      const pdf =
+        new jsPDF({
+          orientation: "landscape",
+          unit: "mm",
+          format: "a4"
+        });
+
+      const pageWidth =
+        pdf.internal.pageSize.getWidth();
+
+      const pageHeight =
+        pdf.internal.pageSize.getHeight();
+
+      pdf.setFillColor(245, 245, 245);
+      pdf.rect(
+        0,
+        0,
+        pageWidth,
+        pageHeight,
+        "F"
       );
 
-    pdf.addImage(
-      imageData,
-      "PNG",
-      imageX,
-      imageY,
-      imageWidth,
-      imageHeight
-    );
+      pdf.setFontSize(16);
+      pdf.text(
+        "ET Expo Booth Design AI Assistance",
+        12,
+        14
+      );
 
-    pdf.setFontSize(9);
-    pdf.text(
-      `Objects: ${objects.length}    Exported: ${new Date().toLocaleString()}`,
-      12,
-      pageHeight - 12
-    );
+      pdf.setFontSize(10);
+      pdf.text(
+        `Booth: ${boothWidth}ft W x ${boothDepth}ft D    Floor: ${floorType}    Back Wall: ${wallType}`,
+        12,
+        21
+      );
 
-    const blob =
-      pdf.output("blob");
+      const imageX = 12;
+      const imageY = 28;
 
-    downloadFile(
-      blob,
-      "ET-Expo-Booth-Design-Image-Proposal.pdf"
-    );
+      const imageWidth =
+        pageWidth - 24;
+
+      const imageHeight =
+        Math.min(
+          pageHeight - 48,
+          imageWidth * screenshot.height / screenshot.width
+        );
+
+      pdf.addImage(
+        screenshot.dataUrl,
+        "PNG",
+        imageX,
+        imageY,
+        imageWidth,
+        imageHeight
+      );
+
+      pdf.setFontSize(9);
+      pdf.text(
+        `Objects: ${objects.length}    Exported: ${new Date().toLocaleString()}`,
+        12,
+        pageHeight - 12
+      );
+
+      downloadFile(
+        pdf.output("blob"),
+        "ET-Expo-Booth-Design-Image-Proposal.pdf"
+      );
+    } catch (error) {
+      window.alert(
+        error.message || "Unable to export PDF image."
+      );
+    }
   };
-return (
+
+  return (
 
     <div
       style={{
@@ -1323,6 +1373,9 @@ Pillar {pillarCount}
       </div>      <div style={{ flex: 1 }}>
 
         <Canvas
+          gl={{
+            preserveDrawingBuffer: true
+          }}
           camera={{
             position: [20, 15, 20],
             fov: 50
@@ -1689,6 +1742,7 @@ if (
   );
 
 }
+
 
 
 
